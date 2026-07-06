@@ -36,17 +36,20 @@
   .req-submit { display:inline-flex; align-items:center; gap:12px; font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0.04em; color:#FBFAF7; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); padding:16px 28px; border:1px solid transparent; box-shadow:0 0 0 rgba(168,85,247,0); transition:filter .3s ease,box-shadow .3s ease; cursor:pointer; }
 
   /* Scroll progress bar */
-  #scroll-progress { position:fixed; top:0; left:0; height:3px; width:0; z-index:1000; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); will-change:width; }
+  #scroll-progress { position:fixed; top:0; left:0; height:3px; width:0; z-index:1200; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); will-change:width; }
+
+  /* Fixed navbar + reveal footer: keep anchor targets clear of the fixed nav */
+  html { scroll-padding-top:72px; }
 </style>
 </head>
 <body>
 
 <div id="scroll-progress" aria-hidden="true"></div>
 
-<div style="background:#FBFAF7; color:#14181F; font-family:'Inter',system-ui,sans-serif; min-height:100vh; overflow-x:hidden;">
+<div id="page" style="position:relative; z-index:1; background:#FBFAF7; color:#14181F; font-family:'Inter',system-ui,sans-serif; min-height:100vh; overflow-x:hidden; padding-top:70px; margin-bottom:92px; box-shadow:0 30px 60px -20px rgba(0,0,0,0.5);">
 
   <!-- NAV -->
-  <nav style="border-bottom:1px solid #DDD9CF;">
+  <nav style="position:fixed; top:0; left:0; right:0; z-index:900; background:#FBFAF7; border-bottom:1px solid #DDD9CF;">
     <div style="max-width:1160px; margin:0 auto; padding:18px clamp(20px,5vw,48px); display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
       <div style="display:flex; align-items:center; gap:12px;">
         <span style="font-family:'Fraunces',serif; font-weight:500; font-size:21px; letter-spacing:-0.01em;">Cr<span style="background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); -webkit-background-clip:text; background-clip:text; color:transparent;">µ</span>cible</span>
@@ -418,18 +421,18 @@
     </div>
   </section>
 
-  <!-- FOOTER -->
-  <footer style="background:#14181F; border-top:1px solid #2A2F39;">
-    <div style="max-width:1160px; margin:0 auto; padding:36px clamp(20px,5vw,48px); display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between;">
-      <div style="display:flex; align-items:center; gap:11px;">
-        <span style="font-family:'Fraunces',serif; font-weight:500; font-size:16px; color:#FBFAF7;">Cr<span style="background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); -webkit-background-clip:text; background-clip:text; color:transparent;">µ</span>cible</span>
-        <span style="font-size:14px; color:#7A828E;">— systematic strategy validation</span>
-      </div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.08em; text-transform:uppercase; color:#7A828E;">Order-level rigour · survival over Sharpe</div>
-    </div>
-  </footer>
-
 </div>
+
+<!-- FOOTER (fixed — revealed as the page scrolls over it) -->
+<footer style="position:fixed; bottom:0; left:0; right:0; z-index:0; background:#14181F; border-top:1px solid #2A2F39;">
+  <div style="max-width:1160px; margin:0 auto; padding:36px clamp(20px,5vw,48px); display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:center; gap:11px;">
+      <span style="font-family:'Fraunces',serif; font-weight:500; font-size:16px; color:#FBFAF7;">Cr<span style="background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); -webkit-background-clip:text; background-clip:text; color:transparent;">µ</span>cible</span>
+      <span style="font-size:14px; color:#7A828E;">— systematic strategy validation</span>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.08em; text-transform:uppercase; color:#7A828E;">Order-level rigour · survival over Sharpe</div>
+  </div>
+</footer>
 
 <script>
   (function () {
@@ -462,6 +465,29 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     update();
+  })();
+</script>
+
+<script>
+  /* Fixed-navbar offset + reveal-footer sizing (measured, responsive) */
+  (function () {
+    var nav = document.querySelector('nav');
+    var footer = document.querySelector('footer');
+    var page = document.getElementById('page');
+    if (!page) return;
+    function sync() {
+      if (nav) {
+        var nh = nav.offsetHeight;
+        page.style.paddingTop = nh + 'px';
+        document.documentElement.style.scrollPaddingTop = nh + 'px';
+      }
+      if (footer) {
+        page.style.marginBottom = footer.offsetHeight + 'px';
+      }
+    }
+    sync();
+    window.addEventListener('load', sync);
+    window.addEventListener('resize', sync);
   })();
 </script>
 
