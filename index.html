@@ -42,6 +42,30 @@
 
   /* Fixed navbar + reveal footer: keep anchor targets clear of the fixed nav */
   html { scroll-padding-top:72px; }
+
+  /* Scroll-reveal (fade + rise) — hidden state is added by JS, so no-JS keeps everything visible */
+  .reveal { opacity:0; transform:translateY(18px); transition:opacity .7s cubic-bezier(.16,.7,.3,1), transform .7s cubic-bezier(.16,.7,.3,1); will-change:opacity, transform; }
+  .reveal.is-visible { opacity:1; transform:none; will-change:auto; }
+
+  /* Verdict "GO" stamp */
+  .stamp { opacity:0; }
+  .stamp.is-visible { animation:stamp-in .6s cubic-bezier(.2,.8,.25,1) .12s both; }
+  @keyframes stamp-in {
+    0%   { opacity:0; transform:rotate(-16deg) scale(1.7); }
+    55%  { opacity:1; transform:rotate(-1deg) scale(.92); }
+    100% { opacity:1; transform:rotate(-3.5deg) scale(1); }
+  }
+
+  /* FAQ smooth open/close (height animated by JS) */
+  .faq details > div { transition:height .35s cubic-bezier(.4,0,.2,1); }
+
+  /* Fixed navbar: soft shadow once scrolled off the top */
+  nav { transition:box-shadow .3s ease; }
+  nav.nav-scrolled { box-shadow:0 10px 30px -16px rgba(20,24,31,0.3); }
+
+  /* Arrow nudge micro-interaction */
+  .arrow { display:inline-block; transition:transform .25s ease; }
+  a:hover .arrow, button:hover .arrow { transform:translateX(4px); }
 </style>
 </head>
 <body>
@@ -77,7 +101,7 @@
   <section style="max-width:1160px; margin:0 auto; padding:0 clamp(20px,5vw,48px) clamp(56px,8vw,96px);">
     <div style="display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:18px;">
       <div style="font-family:'Fraunces',serif; font-weight:500; font-size:clamp(1.2rem,2vw,1.5rem); letter-spacing:-0.01em; color:#14181F;">What a client receives.</div>
-      <a href="Crucible%20Strategy%20Validation.pdf" target="_blank" rel="noopener" style="text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:#6D28D9; border-bottom:1px solid #6D28D9; padding-bottom:2px;">View the full sample report &rarr;</a>
+      <a href="Crucible%20Strategy%20Validation.pdf" target="_blank" rel="noopener" style="text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:#6D28D9; border-bottom:1px solid #6D28D9; padding-bottom:2px;">View the full sample report <span>&rarr;</span></a>
     </div>
     <div style="border:1px solid #DDD9CF; background:#FBFAF7; display:flex; flex-wrap:wrap; box-shadow:0 1px 0 rgba(20,24,31,0.02);">
 
@@ -95,11 +119,11 @@
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding:15px 0; border-top:1px solid #DDD9CF;">
             <span style="font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#4A535F;">Net expectancy / trade</span>
-            <span style="font-family:'JetBrains Mono',monospace; font-size:13.5px; font-weight:500; color:#14181F; text-align:right;">+2.8 pt</span>
+            <span class="count" data-to="2.8" data-dec="1" data-prefix="+" data-suffix=" pt" style="font-family:'JetBrains Mono',monospace; font-size:13.5px; font-weight:500; color:#14181F; text-align:right;">+2.8 pt</span>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding:15px 0; border-top:1px solid #DDD9CF;">
             <span style="font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#4A535F;">Return per unit drawdown</span>
-            <span style="font-family:'JetBrains Mono',monospace; font-size:13.5px; font-weight:600; color:#6D28D9; text-align:right;">1.94×</span>
+            <span class="count" data-to="1.94" data-dec="2" data-suffix="×" style="font-family:'JetBrains Mono',monospace; font-size:13.5px; font-weight:600; color:#6D28D9; text-align:right;">1.94×</span>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding:15px 0; border-top:1px solid #DDD9CF;">
             <span style="font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#4A535F;">Shock-regime behaviour</span>
@@ -111,7 +135,7 @@
           </div>
           <div style="display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding:15px 0; border-top:1px solid #DDD9CF; border-bottom:1px solid #DDD9CF;">
             <span style="font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#4A535F;">Calibration (ECE)</span>
-            <span style="font-family:'JetBrains Mono',monospace; font-size:13.5px; font-weight:500; color:#14181F; text-align:right;">0.041</span>
+            <span class="count" data-to="0.041" data-dec="3" style="font-family:'JetBrains Mono',monospace; font-size:13.5px; font-weight:500; color:#14181F; text-align:right;">0.041</span>
           </div>
         </div>
       </div>
@@ -451,14 +475,16 @@
 <script>
   (function () {
     var bar = document.getElementById('scroll-progress');
-    if (!bar) return;
+    var nav = document.querySelector('nav');
     var ticking = false;
     function update() {
       var doc = document.documentElement;
       var scrollTop = window.scrollY || doc.scrollTop || 0;
-      var scrollable = (doc.scrollHeight || document.body.scrollHeight) - window.innerHeight;
-      var pct = scrollable > 0 ? (scrollTop / scrollable) * 100 : 0;
-      bar.style.width = pct + '%';
+      if (bar) {
+        var scrollable = (doc.scrollHeight || document.body.scrollHeight) - window.innerHeight;
+        bar.style.width = (scrollable > 0 ? (scrollTop / scrollable) * 100 : 0) + '%';
+      }
+      if (nav) { nav.classList.toggle('nav-scrolled', scrollTop > 8); }
       ticking = false;
     }
     function onScroll() {
@@ -490,6 +516,150 @@
     sync();
     window.addEventListener('load', sync);
     window.addEventListener('resize', sync);
+  })();
+</script>
+
+<script>
+  /* Scroll-reveal + verdict stamp + animated counters */
+  (function () {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function animateCount(el) {
+      var to = parseFloat(el.getAttribute('data-to')) || 0;
+      var dec = parseInt(el.getAttribute('data-dec') || '0', 10);
+      var pre = el.getAttribute('data-prefix') || '';
+      var suf = el.getAttribute('data-suffix') || '';
+      var dur = 1100, start = null;
+      function frame(t) {
+        if (start === null) start = t;
+        var p = Math.min((t - start) / dur, 1);
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = pre + (to * e).toFixed(dec) + suf;
+        if (p < 1) requestAnimationFrame(frame);
+        else el.textContent = pre + to.toFixed(dec) + suf;
+      }
+      requestAnimationFrame(frame);
+    }
+
+    var counters = [].slice.call(document.querySelectorAll('.count'));
+    if (reduce) return; // leave final values + everything visible
+
+    counters.forEach(function (el) {
+      var dec = parseInt(el.getAttribute('data-dec') || '0', 10);
+      el.textContent = (el.getAttribute('data-prefix') || '') + (0).toFixed(dec) + (el.getAttribute('data-suffix') || '');
+    });
+
+    var page = document.getElementById('page');
+    var toObserve = [];
+    function markReveal(el, delay) {
+      if (!el) return;
+      el.classList.add('reveal');
+      el.style.transitionDelay = (delay || 0) + 'ms';
+      toObserve.push(el);
+    }
+    function revealChildren(parent, stag) {
+      if (!parent) return;
+      var kids = parent.children, d = 0;
+      for (var i = 0; i < kids.length; i++) { markReveal(kids[i], d); d += (stag || 0); }
+    }
+    function firstDiv(el) { return el ? el.querySelector(':scope > div') : null; }
+
+    if (page) {
+      var blocks = [].filter.call(page.children, function (el) {
+        return el.tagName === 'HEADER' || el.tagName === 'SECTION';
+      });
+      revealChildren(firstDiv(blocks[0]), 90);   // hero
+      revealChildren(firstDiv(blocks[1]), 120);  // report: header row + card
+      (function () {                              // problem
+        var c = firstDiv(blocks[2]); if (!c) return;
+        markReveal(c.children[0], 0); markReveal(c.children[1], 0);
+        revealChildren(c.children[2], 120);
+      })();
+      (function () {                              // method
+        var c = firstDiv(document.getElementById('method')); if (!c) return;
+        markReveal(c.children[0], 0); markReveal(c.children[1], 0);
+        revealChildren(c.children[2], 110);
+      })();
+      (function () {                              // pricing
+        var c = firstDiv(document.getElementById('request')); if (!c) return;
+        markReveal(c.children[0], 0); markReveal(c.children[1], 0); markReveal(c.children[2], 0);
+        revealChildren(c.children[3], 110);
+        markReveal(c.children[4], 0);
+      })();
+      (function () {                              // faq
+        var c = firstDiv(document.querySelector('.faq')); if (!c) return;
+        markReveal(c.children[0], 0); markReveal(c.children[1], 0);
+        revealChildren(c.children[2], 70);
+      })();
+      (function () {                              // contact
+        var c = firstDiv(document.getElementById('contact')); if (!c) return;
+        revealChildren(firstDiv(c), 90);
+      })();
+    }
+
+    var stamp = document.querySelector('[style*="rotate(-3.5deg)"]');
+    if (stamp) { stamp.classList.add('stamp'); toObserve.push(stamp); }
+    counters.forEach(function (el) { toObserve.push(el); });
+
+    function trigger(el) {
+      if (el.classList.contains('count')) animateCount(el);
+      else el.classList.add('is-visible');
+    }
+    if (!('IntersectionObserver' in window)) { toObserve.forEach(trigger); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { trigger(e.target); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    toObserve.forEach(function (el) { io.observe(el); });
+  })();
+</script>
+
+<script>
+  /* FAQ: smooth open/close (native details enhanced) */
+  (function () {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return; // native instant toggle
+    [].forEach.call(document.querySelectorAll('.faq details'), function (d) {
+      var summary = d.querySelector('summary');
+      var content = summary && summary.nextElementSibling;
+      if (!summary || !content) return;
+      function cleanup() { content.style.height = ''; content.style.overflow = ''; delete d.dataset.animating; }
+      summary.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        if (d.dataset.animating) return;
+        d.dataset.animating = '1';
+        content.style.overflow = 'hidden';
+        if (d.open) {
+          content.style.height = content.scrollHeight + 'px';
+          requestAnimationFrame(function () { requestAnimationFrame(function () { content.style.height = '0px'; }); });
+          content.addEventListener('transitionend', function te(e) {
+            if (e.propertyName !== 'height') return;
+            content.removeEventListener('transitionend', te);
+            d.open = false; cleanup();
+          });
+        } else {
+          d.open = true;
+          var target = content.scrollHeight;
+          content.style.height = '0px';
+          requestAnimationFrame(function () { requestAnimationFrame(function () { content.style.height = target + 'px'; }); });
+          content.addEventListener('transitionend', function te(e) {
+            if (e.propertyName !== 'height') return;
+            content.removeEventListener('transitionend', te);
+            cleanup();
+          });
+        }
+      });
+    });
+  })();
+</script>
+
+<script>
+  /* Arrow nudge: flag trailing "→" glyphs so their link/button can nudge them on hover */
+  (function () {
+    [].forEach.call(document.querySelectorAll('a span, button span'), function (s) {
+      if (s.textContent.trim() === '→') s.classList.add('arrow');
+    });
   })();
 </script>
 
