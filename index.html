@@ -59,6 +59,25 @@
   .arrow { display:inline-block; transition:transform .25s ease; }
   a:hover .arrow, button:hover .arrow { transform:translateX(4px); }
 
+  /* Request form fields (light variant, used by the overlay) */
+  .req-label { display:block; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:#4A535F; margin-bottom:8px; }
+  .req-field { width:100%; background:#FBFAF7; color:#14181F; border:1px solid #DDD9CF; padding:12px 14px; font-family:'Inter',system-ui,sans-serif; font-size:16px; line-height:1.45; box-sizing:border-box; }
+  .req-field::placeholder { color:#7A828E; }
+  .req-field:focus { outline:none; border-color:#6D28D9; box-shadow:0 0 0 3px rgba(109,40,217,0.14); }
+  textarea.req-field { resize:vertical; min-height:96px; }
+  .req-submit { display:inline-flex; align-items:center; gap:12px; font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0.04em; text-transform:uppercase; color:#FBFAF7; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); padding:16px 28px; border:1px solid transparent; box-shadow:0 0 0 rgba(124,58,237,0); transition:filter .3s ease,box-shadow .3s ease; cursor:pointer; }
+  .req-submit:hover { filter:brightness(1.12); box-shadow:0 6px 26px -6px rgba(124,58,237,0.6); }
+
+  /* Request overlay (same-page morph target) */
+  .req-overlay { position:fixed; inset:0; z-index:1300; display:flex; align-items:flex-start; justify-content:center; overflow-y:auto; padding:clamp(16px,5vh,64px) clamp(16px,5vw,40px); }
+  .req-overlay[hidden] { display:none; }
+  .req-overlay-backdrop { position:fixed; inset:0; background:rgba(20,24,31,0.55); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); view-transition-name:req-backdrop; }
+  .req-overlay-panel { position:relative; z-index:1; width:100%; max-width:660px; background:#FBFAF7; border:1px solid #DDD9CF; padding:clamp(28px,3.5vw,44px); box-shadow:0 40px 90px -30px rgba(20,24,31,0.6); view-transition-name:request-panel; }
+  .req-overlay-panel::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); }
+  .req-overlay-close { position:absolute; top:14px; right:14px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; padding:0; background:#FBFAF7; border:1px solid #DDD9CF; color:#4A535F; font-family:'JetBrains Mono',monospace; font-size:14px; line-height:1; cursor:pointer; transition:border-color .2s ease, color .2s ease; }
+  .req-overlay-close:hover { border-color:#6D28D9; color:#6D28D9; }
+  body.req-open { overflow:hidden; }
+
   /* Cross-document page transitions (native View Transitions; fade-in fallback elsewhere) */
   @view-transition { navigation: auto; }
   nav { view-transition-name: site-nav; }
@@ -621,28 +640,164 @@
   })();
 </script>
 
+<!-- REQUEST OVERLAY (in-page morph target) -->
+<div id="req-overlay" class="req-overlay" hidden aria-hidden="true">
+  <div class="req-overlay-backdrop" data-close></div>
+  <div class="req-overlay-panel" role="dialog" aria-modal="true" aria-labelledby="ro-title">
+    <button type="button" class="req-overlay-close" data-close aria-label="Close">&#10005;</button>
+    <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:24px; flex-wrap:wrap; padding-right:34px;">
+      <h2 id="ro-title" style="margin:0; font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:400; letter-spacing:0.14em; text-transform:uppercase; color:#6D28D9;">Validation request</h2>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.08em; color:#4A535F;">REF · assigned on receipt</div>
+    </div>
+    <form action="https://formsubmit.co/request@cruciblesystematic.com" method="POST">
+      <input type="hidden" name="_subject" value="New validation request — Crucible">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="https://cruciblesystematic.com/thanks.html">
+      <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
+
+      <div style="display:flex; flex-wrap:wrap; gap:18px;">
+        <div style="flex:1 1 220px;">
+          <label class="req-label" for="ro-name">Name</label>
+          <input class="req-field" id="ro-name" type="text" name="Name" autocomplete="name" required>
+        </div>
+        <div style="flex:1 1 220px;">
+          <label class="req-label" for="ro-email">Email</label>
+          <input class="req-field" id="ro-email" type="email" name="email" autocomplete="email" required>
+        </div>
+        <div style="flex:1 1 220px;">
+          <label class="req-label" for="ro-offer">Engagement</label>
+          <select class="req-field" id="ro-offer" name="Offer">
+            <option value="Baseline">Baseline — €350 · one-off</option>
+            <option value="Pro">Pro — €990 · one-off</option>
+            <option value="Retainer">Retainer — €1,400/mo</option>
+            <option value="Undecided" selected>Not sure yet</option>
+          </select>
+        </div>
+        <div style="flex:1 1 220px;">
+          <label class="req-label" for="ro-window">Test window (optional)</label>
+          <input class="req-field" id="ro-window" type="text" name="Test window" placeholder="e.g. Jan 2023 – Dec 2025">
+        </div>
+        <div style="flex:1 1 100%;">
+          <label class="req-label" for="ro-strategy">Strategy in brief</label>
+          <p id="ro-strategy-hint" style="font-size:12.5px; line-height:1.5; color:#4A535F; margin:-2px 0 10px;">Entry / exit logic, parameters, stop &amp; target — the rules, not the code.</p>
+          <textarea class="req-field" id="ro-strategy" name="Strategy summary" required aria-describedby="ro-strategy-hint"></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top:26px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+        <button type="submit" class="req-submit">Send request<span class="arrow" style="font-size:15px;">&rarr;</span></button>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.03em; color:#4A535F;">Prefer email? <a href="mailto:request@cruciblesystematic.com?subject=Strategy%20validation%20request" style="color:#4A535F; border-bottom:1px solid #DDD9CF; padding-bottom:1px;">request@cruciblesystematic.com</a></span>
+      </div>
+    </form>
+
+    <p style="margin:22px 0 0; padding-top:18px; border-top:1px solid #DDD9CF; font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.7; letter-spacing:0.02em; color:#4A535F;">Founding cohort — Baseline €350 · Pro €990 (first 5) · Retainer €1,400/mo (first 3). Scope confirmation within one business day; full refund if the report doesn't give a clear go / no-go.</p>
+  </div>
+</div>
+
 <script>
-  /* Card-to-form morph: at capture time (pageswap), name the pricing card matching the
-     destination URL so it morphs into the request panel; any other navigation leaves with
-     clean names, and pagereveal clears the leftover name once the reverse morph has landed. */
+  /* In-page request overlay with card→panel View Transition morph */
   (function () {
-    var links = [].slice.call(document.querySelectorAll('a[href^="request.html?offer="]'));
-    if (!links.length) return;
-    function clearAll() {
-      links.forEach(function (b) { b.parentElement.style.viewTransitionName = ''; });
+    var overlay = document.getElementById('req-overlay');
+    if (!overlay) return;
+    var sel = document.getElementById('ro-offer');
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var offerMap = { baseline: 'Baseline', pro: 'Pro', retainer: 'Retainer' };
+    var lastTrigger = null, originCard = null, isOpen = false;
+
+    function setOffer(v) {
+      if (!sel) return;
+      var k = (v || '').toLowerCase();
+      sel.value = Object.prototype.hasOwnProperty.call(offerMap, k) ? offerMap[k] : 'Undecided';
     }
-    window.addEventListener('pageswap', function (e) {
-      clearAll();
-      if (!e.viewTransition || !e.activation || !e.activation.entry) return;
-      var m = (e.activation.entry.url || '').match(/request\.html\?offer=(Baseline|Pro|Retainer)\b/);
-      if (!m) return;
-      var link = document.querySelector('a[href="request.html?offer=' + m[1] + '"]');
-      if (link) link.parentElement.style.viewTransitionName = 'request-panel';
+    function showDOM() {
+      overlay.hidden = false;
+      overlay.removeAttribute('aria-hidden');
+      document.body.classList.add('req-open');
+      isOpen = true;
+    }
+    function hideDOM() {
+      overlay.hidden = true;
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('req-open');
+      isOpen = false;
+    }
+    function focusFirst() {
+      var el = overlay.querySelector('input:not([type=hidden]):not([tabindex="-1"]), select, textarea, button');
+      if (el) { try { el.focus(); } catch (e) {} }
+    }
+    function restoreFocus() {
+      if (lastTrigger && lastTrigger.focus) { try { lastTrigger.focus(); } catch (e) {} }
+    }
+    function canVT() { return typeof document.startViewTransition === 'function' && !reduce; }
+
+    function openOverlay(offer, card, trigger) {
+      if (isOpen) return;
+      setOffer(offer);
+      lastTrigger = trigger || null;
+      originCard = card || null;
+      if (canVT() && card) {
+        card.style.viewTransitionName = 'request-panel';
+        var vt = document.startViewTransition(function () { card.style.viewTransitionName = ''; showDOM(); });
+        vt.finished.finally(function () { card.style.viewTransitionName = ''; focusFirst(); });
+      } else if (canVT()) {
+        document.startViewTransition(showDOM).finished.finally(focusFirst);
+      } else {
+        showDOM(); focusFirst();
+      }
+    }
+    function closeOverlay() {
+      if (!isOpen) return;
+      var card = originCard;
+      if (canVT()) {
+        var vt = document.startViewTransition(function () {
+          hideDOM();
+          if (card) card.style.viewTransitionName = 'request-panel';
+        });
+        vt.finished.finally(function () {
+          if (card) card.style.viewTransitionName = '';
+          restoreFocus();
+        });
+      } else {
+        hideDOM(); restoreFocus();
+      }
+    }
+
+    /* Intercept every request link → open the overlay instead of navigating */
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest ? e.target.closest('a[href^="request.html"]') : null;
+      if (!a) return;
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      var href = a.getAttribute('href') || '';
+      var m = href.match(/offer=([A-Za-z]+)/);
+      var card = /offer=/.test(href) ? a.parentElement : null;
+      openOverlay(m ? m[1] : '', card, a);
     });
-    window.addEventListener('pagereveal', function (e) {
-      if (e.viewTransition) { e.viewTransition.finished.finally(clearAll); }
-      else { clearAll(); }
+
+    /* Close: backdrop or close button */
+    overlay.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('[data-close]')) closeOverlay();
     });
+
+    /* Keyboard: Esc + focus trap */
+    document.addEventListener('keydown', function (e) {
+      if (!isOpen) return;
+      if (e.key === 'Escape') { e.preventDefault(); closeOverlay(); return; }
+      if (e.key !== 'Tab') return;
+      var f = [].slice.call(overlay.querySelectorAll('a[href], button:not([disabled]), input:not([type=hidden]), select, textarea'))
+        .filter(function (el) { return el.offsetWidth || el.offsetHeight || el === document.activeElement; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+
+    /* Deep-link: ?offer= or #request opens the overlay on load (no morph) */
+    (function () {
+      var offer = new URLSearchParams(location.search).get('offer');
+      if (offer || location.hash === '#request') { setOffer(offer || ''); showDOM(); focusFirst(); }
+    })();
   })();
 </script>
 
