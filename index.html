@@ -84,6 +84,8 @@
   ::view-transition-old(root) { animation:vt-out .25s cubic-bezier(.4,0,.2,1) both; }
   ::view-transition-new(root) { animation:vt-in .35s cubic-bezier(.16,.7,.3,1) both; }
   ::view-transition-group(request-panel) { animation-duration:.45s; animation-timing-function:cubic-bezier(.2,.8,.2,1); }
+  /* Freeze the page behind the request overlay: only the panel morphs, background stays put */
+  html.req-vt-active::view-transition-old(root), html.req-vt-active::view-transition-new(root) { animation:none !important; }
   @keyframes vt-out { to { opacity:0; transform:translateY(-8px); } }
   @keyframes vt-in { from { opacity:0; transform:translateY(10px); } }
   @keyframes page-in { from { opacity:0; } }
@@ -730,6 +732,13 @@
       if (lastTrigger && lastTrigger.focus) { try { lastTrigger.focus(); } catch (e) {} }
     }
     function canVT() { return typeof document.startViewTransition === 'function' && !reduce; }
+    function runVT(mutate) {
+      var html = document.documentElement;
+      html.classList.add('req-vt-active');
+      var vt = document.startViewTransition(mutate);
+      vt.finished.finally(function () { html.classList.remove('req-vt-active'); });
+      return vt;
+    }
 
     function openOverlay(offer, card, trigger) {
       if (isOpen) return;
@@ -738,10 +747,10 @@
       originCard = card || null;
       if (canVT() && card) {
         card.style.viewTransitionName = 'request-panel';
-        var vt = document.startViewTransition(function () { card.style.viewTransitionName = ''; showDOM(); });
-        vt.finished.finally(function () { card.style.viewTransitionName = ''; focusFirst(); });
+        runVT(function () { card.style.viewTransitionName = ''; showDOM(); })
+          .finished.finally(function () { card.style.viewTransitionName = ''; focusFirst(); });
       } else if (canVT()) {
-        document.startViewTransition(showDOM).finished.finally(focusFirst);
+        runVT(showDOM).finished.finally(focusFirst);
       } else {
         showDOM(); focusFirst();
       }
@@ -750,11 +759,10 @@
       if (!isOpen) return;
       var card = originCard;
       if (canVT()) {
-        var vt = document.startViewTransition(function () {
+        runVT(function () {
           hideDOM();
           if (card) card.style.viewTransitionName = 'request-panel';
-        });
-        vt.finished.finally(function () {
+        }).finished.finally(function () {
           if (card) card.style.viewTransitionName = '';
           restoreFocus();
         });
