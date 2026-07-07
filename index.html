@@ -93,11 +93,19 @@
     body { animation:page-in .4s ease both; }
   }
   .no-xdoc-vt body { animation:page-in .4s ease both; }
+
+  /* GSAP SplitText hero title */
+  html.hero-split-pending .hero-h1 { opacity:0; }
+  .hero-h1 .hero-word { display:inline-block; will-change:transform; }
+  .hero-em .hero-word { background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
   @media (prefers-reduced-motion: reduce) {
     ::view-transition-group(*), ::view-transition-image-pair(*), ::view-transition-old(*), ::view-transition-new(*) { animation:none !important; }
   }
 </style>
 <script>if (!('PageRevealEvent' in window)) document.documentElement.className += ' no-xdoc-vt';</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<script>if (!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { document.documentElement.classList.add('hero-split-pending'); setTimeout(function(){ document.documentElement.classList.remove('hero-split-pending'); }, 2000); }</script>
 </head>
 <body>
 
@@ -119,7 +127,7 @@
   <header style="max-width:1160px; margin:0 auto; padding:clamp(56px,8vw,104px) clamp(20px,5vw,48px) clamp(40px,5vw,56px);">
     <div style="max-width:880px;">
       <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:0.14em; text-transform:uppercase; color:#6D28D9; margin-bottom:28px;">Systematic strategy validation · ES futures</div>
-      <h1 style="font-family:'Fraunces',serif; font-weight:500; font-size:clamp(2.6rem,6.2vw,4.9rem); line-height:1.04; letter-spacing:-0.02em; margin:0 0 28px;">Most backtests pass. Most strategies <span style="font-style:italic; font-weight:600; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); -webkit-background-clip:text; background-clip:text; color:transparent;">die in live</span>.</h1>
+      <h1 class="hero-h1" style="font-family:'Fraunces',serif; font-weight:500; font-size:clamp(2.6rem,6.2vw,4.9rem); line-height:1.04; letter-spacing:-0.02em; margin:0 0 28px;">Most backtests pass. Most strategies <span class="hero-em" style="font-style:italic; font-weight:600; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); -webkit-background-clip:text; background-clip:text; color:transparent;">die in live</span>.</h1>
       <p style="font-size:clamp(17px,1.5vw,19px); line-height:1.62; color:#4A535F; max-width:660px; margin:0 0 36px;">Crucible reconstructs your system against order-level ES market data — real slippage, real queue position — and returns a verdict judged on return per unit of drawdown. Survival, not a flattering equity curve or a borrowed Sharpe ratio.</p>
       <div style="display:flex; flex-wrap:wrap; gap:14px;">
         <a href="request.html" class="btn-grad" style="text-decoration:none; display:inline-flex; align-items:center; font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0.05em; text-transform:uppercase; color:#FBFAF7; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); padding:15px 26px; border:1px solid transparent; box-shadow:0 0 0 rgba(124,58,237,0); transition:filter .3s ease,box-shadow .3s ease;">Request a validation</a>
@@ -547,7 +555,14 @@
       var blocks = [].filter.call(page.children, function (el) {
         return el.tagName === 'HEADER' || el.tagName === 'SECTION';
       });
-      revealChildren(firstDiv(blocks[0]), 90);   // hero
+      (function () {                              // hero (skip h1 — GSAP SplitText handles it)
+        var hero = firstDiv(blocks[0]); if (!hero) return;
+        var d = 0;
+        for (var i = 0; i < hero.children.length; i++) {
+          if (hero.children[i].tagName === 'H1') continue;
+          markReveal(hero.children[i], d); d += 90;
+        }
+      })();
       revealChildren(blocks[1], 120);  // report: header row + card
       (function () {                              // problem
         var c = firstDiv(blocks[2]); if (!c) return;
@@ -806,6 +821,32 @@
       var offer = new URLSearchParams(location.search).get('offer');
       if (offer || location.hash === '#request') { setOffer(offer || ''); showDOM(); focusFirst(); }
     })();
+  })();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+<script>
+  /* Hero title: reconstruct word-by-word with GSAP SplitText (graceful fallbacks) */
+  (function () {
+    var html = document.documentElement;
+    var h1 = document.querySelector('.hero-h1');
+    function reveal() { html.classList.remove('hero-split-pending'); }
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!h1 || reduce) { reveal(); return; }
+    function run() {
+      if (!window.gsap || !window.SplitText) { reveal(); return; }
+      try {
+        reveal();
+        var split = new SplitText(h1, { type: 'words', wordsClass: 'hero-word' });
+        gsap.from(split.words, {
+          yPercent: 110, opacity: 0, duration: 0.7, ease: 'power3.out',
+          stagger: 0.045, delay: 0.12,
+          onComplete: function () { if (split.revert) split.revert(); }
+        });
+      } catch (e) { reveal(); }
+    }
+    (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(run);
   })();
 </script>
 
