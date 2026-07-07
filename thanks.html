@@ -16,6 +16,20 @@
   ::selection { background-color:#6D28D9; color:#FBFAF7; }
   ::-moz-selection { background-color:#6D28D9; color:#FBFAF7; }
   :focus-visible { outline: 2px solid #6D28D9; outline-offset: 3px; }
+
+  /* Cross-document page transitions (native View Transitions; fade-in fallback elsewhere) */
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root) { animation:vt-out .25s cubic-bezier(.4,0,.2,1) both; }
+  ::view-transition-new(root) { animation:vt-in .35s cubic-bezier(.16,.7,.3,1) both; }
+  @keyframes vt-out { to { opacity:0; transform:translateY(-8px); } }
+  @keyframes vt-in { from { opacity:0; transform:translateY(10px); } }
+  @supports not (view-transition-name: root) {
+    body { animation:page-in .4s ease both; }
+    @keyframes page-in { from { opacity:0; } }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root), ::view-transition-new(root), body { animation:none !important; }
+  }
 </style>
 </head>
 <body>

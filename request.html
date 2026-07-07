@@ -47,6 +47,21 @@
   /* Arrow nudge micro-interaction */
   .arrow { display:inline-block; transition:transform .25s ease; }
   a:hover .arrow, button:hover .arrow { transform:translateX(4px); }
+
+  /* Cross-document page transitions (native View Transitions; fade-in fallback elsewhere) */
+  @view-transition { navigation: auto; }
+  nav { view-transition-name: site-nav; }
+  ::view-transition-old(root) { animation:vt-out .25s cubic-bezier(.4,0,.2,1) both; }
+  ::view-transition-new(root) { animation:vt-in .35s cubic-bezier(.16,.7,.3,1) both; }
+  @keyframes vt-out { to { opacity:0; transform:translateY(-8px); } }
+  @keyframes vt-in { from { opacity:0; transform:translateY(10px); } }
+  @supports not (view-transition-name: root) {
+    body { animation:page-in .4s ease both; }
+    @keyframes page-in { from { opacity:0; } }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root), ::view-transition-new(root) { animation:none !important; }
+  }
 </style>
 </head>
 <body>
