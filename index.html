@@ -842,6 +842,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script>
   /* Hero title: reconstruct word-by-word with GSAP SplitText (graceful fallbacks) */
   (function () {
@@ -863,6 +864,35 @@
       } catch (e) { reveal(); }
     }
     (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(run);
+  })();
+</script>
+
+<script>
+  /* Scroll-out effects (GSAP ScrollTrigger): the hero dissolves as you leave it, and
+     section headings drift up + soften as they exit the top. immediateRender:false keeps
+     these from clashing with the on-enter scroll-reveal on the same elements. */
+  (function () {
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !window.gsap || !window.ScrollTrigger) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    var header = document.querySelector('#page > header');
+    var heroInner = header && header.querySelector(':scope > div');
+    if (header && heroInner) {
+      gsap.to(heroInner, {
+        opacity: 0, y: -80, ease: 'none',
+        scrollTrigger: { trigger: header, start: 'top top', end: 'bottom top', scrub: 0.4 }
+      });
+    }
+
+    document.querySelectorAll('#page h2').forEach(function (el) {
+      gsap.fromTo(el, { y: 0, opacity: 1 }, {
+        y: -70, opacity: 0.12, ease: 'none', immediateRender: false,
+        scrollTrigger: { trigger: el, start: 'top 18%', end: 'top top', scrub: 0.4 }
+      });
+    });
+
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
   })();
 </script>
 
