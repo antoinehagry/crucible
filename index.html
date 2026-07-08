@@ -58,6 +58,8 @@
   /* Arrow nudge micro-interaction */
   .arrow { display:inline-block; transition:transform .25s ease; }
   a:hover .arrow, button:hover .arrow { transform:translateX(4px); }
+  .nav-link { color:#14181F; transition:color .2s ease; }
+  .nav-link:hover { color:#6D28D9; }
 
   /* Request form fields (light variant, used by the overlay) */
   .req-label { display:block; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:#4A535F; margin-bottom:8px; }
@@ -125,7 +127,10 @@
       <div style="display:flex; align-items:center; gap:12px;">
         <span style="font-family:'Fraunces',serif; font-weight:500; font-size:21px; letter-spacing:-0.01em;">Cr<span style="background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); -webkit-background-clip:text; background-clip:text; color:transparent;">µ</span>cible</span>
       </div>
-      <a href="request.html" class="btn-sweep" style="text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:0.06em; text-transform:uppercase; color:#14181F; border:1px solid #14181F; padding:11px 18px; background:#FBFAF7; box-shadow:inset 0 0 0 0 #14181F; transition:box-shadow .42s cubic-bezier(.7,0,.2,1),color .32s ease;">Request validation</a>
+      <div style="display:flex; align-items:center; gap:clamp(16px,3vw,26px);">
+        <a href="insights.html" class="nav-link" style="text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:0.06em; text-transform:uppercase;">Insights</a>
+        <a href="request.html" class="btn-sweep" style="text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:0.06em; text-transform:uppercase; color:#14181F; border:1px solid #14181F; padding:11px 18px; background:#FBFAF7; box-shadow:inset 0 0 0 0 #14181F; transition:box-shadow .42s cubic-bezier(.7,0,.2,1),color .32s ease;">Request validation</a>
+      </div>
     </div>
   </nav>
 
