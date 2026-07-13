@@ -32,6 +32,9 @@
   #scroll-progress { position:fixed; top:0; left:0; height:3px; width:0; z-index:1200; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); will-change:width; }
 
   html { scroll-padding-top:72px; }
+  #page { display:flex; flex-direction:column; }
+  #page > header, #page > main, #page > section, #page > footer { width:100%; }
+  #page > footer { margin-top:auto; }
   nav { transition:box-shadow .3s ease; }
   nav.nav-scrolled { box-shadow:0 10px 30px -16px rgba(20,24,31,0.3); }
 
@@ -66,7 +69,8 @@
   .chip { display:inline-flex; align-items:center; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#4A535F; border:1px solid #DDD9CF; padding:7px 12px; }
 
   /* Hover-the-name photo reveal */
-  #founder-name { cursor:pointer; }
+  #founder-name { cursor:pointer; animation:name-shimmer 3.2s linear infinite; }
+  @keyframes name-shimmer { 0% { background-position:200% center; } 100% { background-position:-200% center; } }
   #name-photo { position:fixed; top:0; left:0; z-index:1000; width:clamp(190px,20vw,240px); pointer-events:none; opacity:0; transition:opacity .28s ease; will-change:transform, opacity; }
   #name-photo.show { opacity:1; }
   #name-photo.centered { left:50%; top:auto; bottom:22px; transform:translateX(-50%); }
@@ -101,7 +105,7 @@
   <header style="max-width:1160px; margin:0 auto; padding:clamp(56px,8vw,104px) clamp(20px,5vw,48px) clamp(32px,4vw,44px);">
     <div style="max-width:820px;">
       <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:0.14em; text-transform:uppercase; color:#6D28D9; margin-bottom:26px;">About · who's behind Crucible</div>
-      <h1 style="font-family:'Fraunces',serif; font-weight:500; font-size:clamp(2.3rem,5.4vw,4.1rem); line-height:1.05; letter-spacing:-0.02em; margin:0 0 24px;">Run by <span id="founder-name" tabindex="0" style="font-style:italic; font-weight:600; cursor:pointer; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); -webkit-background-clip:text; background-clip:text; color:transparent;">Antoine Hagry</span>.</h1>
+      <h1 style="font-family:'Fraunces',serif; font-weight:500; font-size:clamp(2.3rem,5.4vw,4.1rem); line-height:1.05; letter-spacing:-0.02em; margin:0 0 24px;">Run by <span id="founder-name" tabindex="0" style="font-style:italic; font-weight:600; cursor:pointer; background:linear-gradient(110deg,#4C1D95 0%,#7C3AED 38%,#CBA6FF 50%,#7C3AED 62%,#A855F7 100%); background-size:220% auto; -webkit-background-clip:text; background-clip:text; color:transparent;">Antoine Hagry</span>.</h1>
       <p style="font-size:clamp(16px,1.5vw,18px); line-height:1.62; color:#4A535F; max-width:640px; margin:0;">Crucible is a one-person practice. Every validation is run by me, end to end — no junior desk, no outsourcing, no reselling your rules.</p>
     </div>
   </header>

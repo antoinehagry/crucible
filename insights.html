@@ -36,6 +36,9 @@
 
   /* Fixed navbar */
   html { scroll-padding-top:72px; }
+  #page { display:flex; flex-direction:column; }
+  #page > header, #page > main, #page > section, #page > footer { width:100%; }
+  #page > footer { margin-top:auto; }
   nav { transition:box-shadow .3s ease; }
   nav.nav-scrolled { box-shadow:0 10px 30px -16px rgba(20,24,31,0.3); }
 
