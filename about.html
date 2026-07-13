@@ -197,7 +197,7 @@
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     var fine = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var GAP = 13, R = 150, R2 = R * R;
+    var GAP = 8, R = 150, R2 = R * R;
     var vw = 0, vh = 0;
     var pointer = { x: -9999, y: -9999 }, target = { x: -9999, y: -9999 };
 
@@ -237,26 +237,29 @@
     }
     function paint() {
       ctx.clearRect(0, 0, vw, vh);
-      var maxY = Math.min(vh, pageEl.getBoundingClientRect().bottom);
+      if (!portrait) return;
       var sy = reduce ? 0 : (window.scrollY || window.pageYOffset || 0);
-      var phase = ((sy % GAP) + GAP) % GAP;
-      var cols = Math.ceil(vw / GAP) + 1;
-      var ox = (vw - (cols - 1) * GAP) / 2;
-      var BOX = Math.min(vw * 0.9, 660);
-      var boxLeft = (vw - BOX) / 2, boxTop = 30;
-      for (var y = -phase; y <= maxY; y += GAP) {
-        for (var i = 0; i < cols; i++) {
-          var x = ox + i * GAP, e = 0, px = x, py = y;
-          var dk = portrait ? sampleDark((x - boxLeft) / BOX, (y + sy - boxTop) / BOX) : 0;
-          if (dk > 0) dk = Math.pow(dk, 0.8);
+      var BOX = Math.min(vw * 0.92, 720);
+      var boxLeft = (vw - BOX) / 2;
+      var boxTopScreen = 40 - sy;          // 40 = page-space top of the portrait
+      var n = Math.ceil(BOX / GAP), maxR = GAP * 0.74;
+      for (var j = 0; j <= n; j++) {
+        var y = boxTopScreen + j * GAP;
+        if (y < -GAP || y > vh + GAP) continue;
+        var v = j / n;
+        for (var i = 0; i <= n; i++) {
+          var x = boxLeft + i * GAP;
+          var dk = sampleDark(i / n, v);
+          if (dk > 0) dk = Math.pow(dk, 0.72);
+          var e = 0, px = x, py = y;
           if (fine) {
             var dx = pointer.x - x, dy = pointer.y - y, d2 = dx * dx + dy * dy;
             if (d2 < R2) { var dist = Math.sqrt(d2) || 0.0001; e = 1 - dist / R; e = e * e; px += (dx / dist) * (e * 6); py += (dy / dist) * (e * 6); }
           }
-          var rad = 0.7 + dk * 2.6 + e * 1.7;
-          if (rad < 0.45) continue;
+          if (dk < 0.05 && e < 0.02) continue;
+          var rad = 0.6 + dk * maxR + e * 1.7;
           var cr = (20 + 89 * e) | 0, cg = (24 + 16 * e) | 0, cb = (31 + 186 * e) | 0;
-          var a = 0.045 + dk * 0.62 + e * 0.5; if (a > 0.92) a = 0.92;
+          var a = 0.1 + dk * 0.6 + e * 0.5; if (a > 0.72) a = 0.72;
           ctx.beginPath();
           ctx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + a + ')';
           ctx.arc(px, py, rad, 0, 6.2832);
