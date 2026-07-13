@@ -98,47 +98,29 @@
   </header>
 
   <!-- MAIN -->
-  <main style="max-width:1160px; margin:0 auto; padding:0 clamp(20px,5vw,48px) clamp(48px,6vw,72px); display:flex; flex-wrap:wrap; gap:clamp(28px,4vw,56px); align-items:flex-start;">
-
-    <!-- portrait -->
-    <div style="flex:0 0 clamp(240px,34%,360px); min-width:240px;">
-      <div class="portrait">
-        <picture>
-          <source srcset="antoine.webp" type="image/webp">
-          <img src="antoine.jpg" alt="Antoine Hagry, founder of Crucible" width="800" height="800" loading="eager">
-        </picture>
-        <img class="portrait-dots" src="antoine-dots-violet.png" alt="" aria-hidden="true" width="720" height="720" loading="lazy">
-      </div>
-      <div style="margin-top:16px; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.06em; color:#14181F;">Antoine Hagry</div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.08em; text-transform:uppercase; color:#6D28D9; margin-top:5px;">Founder · sole operator</div>
-      <div style="display:flex; flex-wrap:wrap; gap:9px; margin-top:20px;">
+  <main style="max-width:1160px; margin:0 auto; padding:0 clamp(20px,5vw,48px) clamp(56px,7vw,90px);">
+    <div style="max-width:720px;">
+      <div style="display:flex; flex-wrap:wrap; gap:9px; margin:0 0 30px;">
         <span class="chip">Duke University</span>
         <span class="chip">UIUC</span>
         <span class="chip">2 yrs · ES futures</span>
       </div>
-    </div>
-
-    <!-- bio -->
-    <div style="flex:1 1 380px;">
       <p style="font-size:clamp(16px,1.5vw,18px); line-height:1.66; color:#14181F; margin:0 0 22px;">I trained at <strong style="font-weight:600;">Duke University</strong> and the <strong style="font-weight:600;">University of Illinois Urbana-Champaign</strong>, and I've spent the last two years trading ES futures systematically — living the exact gap Crucible exists to close.</p>
       <p style="font-size:16px; line-height:1.66; color:#4A535F; margin:0 0 22px;">I built Crucible after watching too many strategies — my own included — pass a clean backtest and then quietly bleed out in live. The culprit is almost never the idea; it's the execution the backtest never modelled: real fills, queue position, clustered drawdowns.</p>
       <p style="font-size:16px; line-height:1.66; color:#4A535F; margin:0 0 28px;">So I built the process I wished I'd had — reconstruct the system against order-level ES data, and judge it on <span style="color:#14181F; font-weight:500;">survival</span>, not on a flattering curve.</p>
 
-      <!-- confidentiality callout -->
       <div style="position:relative; overflow:hidden; border:1px solid #DDD9CF; background:#F2F0EA; padding:clamp(22px,2.6vw,30px); margin-bottom:30px;">
         <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%);"></div>
         <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:#6D28D9; margin-bottom:12px;">Confidentiality</div>
         <p style="font-size:15.5px; line-height:1.62; color:#14181F; margin:0;">What you send me stays with me. I don't redistribute, reuse, or trade your rules — and I'll sign an <strong style="font-weight:600;">NDA before</strong> you share anything if you prefer. It's just me on the other end.</p>
       </div>
 
-      <!-- links / CTA -->
       <div style="display:flex; flex-wrap:wrap; align-items:center; gap:14px 24px;">
         <a href="request.html" class="btn-grad" style="text-decoration:none; display:inline-flex; align-items:center; gap:12px; font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0.04em; text-transform:uppercase; color:#FBFAF7; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); padding:15px 26px; border:1px solid transparent; box-shadow:0 0 0 rgba(124,58,237,0); transition:filter .3s ease,box-shadow .3s ease;">Request a validation<span class="arrow" style="font-size:15px;">&rarr;</span></a>
         <a href="https://www.linkedin.com/in/antoine-hagry/" target="_blank" rel="noopener" class="nav-link" style="text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:0.05em; text-transform:uppercase; border-bottom:1px solid #DDD9CF; padding-bottom:2px;">LinkedIn</a>
         <a href="https://www.youtube.com/@Cruciblequant" target="_blank" rel="noopener" class="nav-link" style="text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:0.05em; text-transform:uppercase; border-bottom:1px solid #DDD9CF; padding-bottom:2px;">YouTube</a>
       </div>
     </div>
-
   </main>
 
   <!-- FOOTER -->
@@ -196,8 +178,8 @@
     function mark(el, delay) { if (!el) return; el.classList.add('reveal'); el.style.transitionDelay = (delay || 0) + 'ms'; toObserve.push(el); }
     var head = document.querySelector('header > div');
     if (head) { var d = 0; for (var i = 0; i < head.children.length; i++) { mark(head.children[i], d); d += 90; } }
-    var mainCols = document.querySelectorAll('main > div');
-    for (var j = 0; j < mainCols.length; j++) mark(mainCols[j], 120 + j * 110);
+    var mainKids = document.querySelectorAll('main > div > *');
+    for (var j = 0; j < mainKids.length; j++) mark(mainKids[j], 120 + j * 90);
     if (!('IntersectionObserver' in window)) { toObserve.forEach(function (el) { el.classList.add('is-visible'); }); return; }
     var io = new IntersectionObserver(function (ents) { ents.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } }); }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
     toObserve.forEach(function (el) { io.observe(el); });
@@ -215,9 +197,38 @@
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     var fine = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var GAP = 34, R = 150, R2 = R * R;
+    var GAP = 16, R = 150, R2 = R * R;
     var vw = 0, vh = 0;
     var pointer = { x: -9999, y: -9999 }, target = { x: -9999, y: -9999 };
+
+    /* Line-drawing source -> darkness buffer (composited on white, smoothed) */
+    var portrait = null;
+    (function () {
+      var img = new Image();
+      img.onload = function () {
+        var BW = 170, BH = 170;
+        var oc = document.createElement('canvas'); oc.width = BW; oc.height = BH;
+        var octx = oc.getContext('2d');
+        octx.fillStyle = '#fff'; octx.fillRect(0, 0, BW, BH);
+        octx.imageSmoothingEnabled = true; if ('imageSmoothingQuality' in octx) octx.imageSmoothingQuality = 'high';
+        octx.drawImage(img, 0, 0, BW, BH);
+        var d;
+        try { d = octx.getImageData(0, 0, BW, BH).data; } catch (e) { return; }
+        var buf = new Float32Array(BW * BH);
+        for (var i = 0; i < BW * BH; i++) {
+          var lum = (d[i * 4] * 0.299 + d[i * 4 + 1] * 0.587 + d[i * 4 + 2] * 0.114) / 255;
+          buf[i] = 1 - lum;
+        }
+        portrait = { buf: buf, BW: BW, BH: BH };
+        if (reduce) { paint(); } else { wake(); }
+      };
+      img.src = 'antoine_points.png';
+    })();
+    function sampleDark(u, v) {
+      if (!portrait || u < 0 || u >= 1 || v < 0 || v >= 1) return 0;
+      var ix = (u * portrait.BW) | 0, iy = (v * portrait.BH) | 0;
+      return portrait.buf[iy * portrait.BW + ix];
+    }
     function resize() {
       vw = window.innerWidth; vh = window.innerHeight;
       canvas.style.width = vw + 'px'; canvas.style.height = vh + 'px';
@@ -231,17 +242,23 @@
       var phase = ((sy % GAP) + GAP) % GAP;
       var cols = Math.ceil(vw / GAP) + 1;
       var ox = (vw - (cols - 1) * GAP) / 2;
+      var BOX = Math.min(vw * 0.9, 660);
+      var boxLeft = (vw - BOX) / 2, boxTop = 30;
       for (var y = -phase; y <= maxY; y += GAP) {
         for (var i = 0; i < cols; i++) {
           var x = ox + i * GAP, e = 0, px = x, py = y;
+          var dk = portrait ? sampleDark((x - boxLeft) / BOX, (y + sy - boxTop) / BOX) : 0;
+          if (dk > 0) dk = Math.min(1, Math.pow(dk, 0.62) * 2.9);
           if (fine) {
             var dx = pointer.x - x, dy = pointer.y - y, d2 = dx * dx + dy * dy;
             if (d2 < R2) { var dist = Math.sqrt(d2) || 0.0001; e = 1 - dist / R; e = e * e; px += (dx / dist) * (e * 6); py += (dy / dist) * (e * 6); }
           }
-          var rad = 1.1 + e * 1.7;
+          var rad = 0.7 + dk * 2.6 + e * 1.7;
+          if (rad < 0.45) continue;
           var cr = (20 + 89 * e) | 0, cg = (24 + 16 * e) | 0, cb = (31 + 186 * e) | 0;
+          var a = 0.045 + dk * 0.62 + e * 0.5; if (a > 0.92) a = 0.92;
           ctx.beginPath();
-          ctx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + (0.09 + e * 0.8) + ')';
+          ctx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + a + ')';
           ctx.arc(px, py, rad, 0, 6.2832);
           ctx.fill();
         }
