@@ -197,7 +197,7 @@
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     var fine = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var GAP = 16, R = 150, R2 = R * R;
+    var GAP = 13, R = 150, R2 = R * R;
     var vw = 0, vh = 0;
     var pointer = { x: -9999, y: -9999 }, target = { x: -9999, y: -9999 };
 
@@ -222,7 +222,7 @@
         portrait = { buf: buf, BW: BW, BH: BH };
         if (reduce) { paint(); } else { wake(); }
       };
-      img.src = 'antoine_points.png';
+      img.src = 'antoine_tone.png';
     })();
     function sampleDark(u, v) {
       if (!portrait || u < 0 || u >= 1 || v < 0 || v >= 1) return 0;
@@ -248,7 +248,7 @@
         for (var i = 0; i < cols; i++) {
           var x = ox + i * GAP, e = 0, px = x, py = y;
           var dk = portrait ? sampleDark((x - boxLeft) / BOX, (y + sy - boxTop) / BOX) : 0;
-          if (dk > 0) dk = Math.min(1, Math.pow(dk, 0.62) * 2.9);
+          if (dk > 0) dk = Math.pow(dk, 0.8);
           if (fine) {
             var dx = pointer.x - x, dy = pointer.y - y, d2 = dx * dx + dy * dy;
             if (d2 < R2) { var dist = Math.sqrt(d2) || 0.0001; e = 1 - dist / R; e = e * e; px += (dx / dist) * (e * 6); py += (dy / dist) * (e * 6); }
