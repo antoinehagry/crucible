@@ -26,6 +26,7 @@
   }
 
   .btn-sweep:hover { box-shadow: inset 600px 0 0 0 #14181F !important; color: #FBFAF7 !important; }
+  .btn-sweep-white:hover { box-shadow: inset 600px 0 0 0 #FFFFFF !important; color: #2A1454 !important; }
   .btn-grad:hover { filter: brightness(1.12); box-shadow: 0 6px 26px -6px rgba(124,58,237,0.6) !important; }
 
   /* Request form (light editorial variant) */
@@ -199,10 +200,13 @@
   <footer style="background:#2A1454; border-top:1px solid #3E2A63;">
     <div style="max-width:1160px; margin:0 auto; padding:36px clamp(20px,5vw,48px); display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between;">
       <div style="display:flex; align-items:center; gap:11px;">
-        <span style="font-family:'Fraunces',serif; font-weight:500; font-size:16px; color:#FBFAF7;">Cr<span style="background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); -webkit-background-clip:text; background-clip:text; color:transparent;">µ</span>cible</span>
+        <span style="font-family:'Fraunces',serif; font-weight:500; font-size:16px; color:#FFFFFF;">Crµcible</span>
         <span style="font-size:14px; color:#7A828E;">— systematic strategy validation</span>
       </div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.08em; text-transform:uppercase; color:#7A828E;">Order-level rigour · survival over Sharpe</div>
+      <div style="display:flex; align-items:center; gap:22px; flex-wrap:wrap;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.08em; text-transform:uppercase; color:#7A828E;">Order-level rigour · survival over Sharpe</span>
+        <a href="request.html" class="btn-sweep-white" style="text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:#FFFFFF; border:1px solid #FFFFFF; padding:10px 16px; box-shadow:inset 0 0 0 0 #FFFFFF; transition:box-shadow .42s cubic-bezier(.7,0,.2,1),color .32s ease;">Request validation</a>
+      </div>
     </div>
   </footer>
 
