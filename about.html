@@ -64,6 +64,15 @@
   .portrait .portrait-dots { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .55s cubic-bezier(.4,0,.2,1); z-index:1; }
   .portrait:hover .portrait-dots, .portrait:focus-within .portrait-dots { opacity:1; }
   .chip { display:inline-flex; align-items:center; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#4A535F; border:1px solid #DDD9CF; padding:7px 12px; }
+
+  /* Hover-the-name photo reveal */
+  #founder-name { cursor:pointer; }
+  #name-photo { position:fixed; top:0; left:0; z-index:1000; width:clamp(190px,20vw,240px); pointer-events:none; opacity:0; transition:opacity .28s ease; will-change:transform, opacity; }
+  #name-photo.show { opacity:1; }
+  #name-photo.centered { left:50%; top:auto; bottom:22px; transform:translateX(-50%); }
+  .np-frame { position:relative; overflow:hidden; border:1px solid #DDD9CF; background:#14181F; box-shadow:0 24px 55px -22px rgba(20,24,31,0.55); }
+  .np-frame::after { content:""; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); }
+  .np-frame img { display:block; width:100%; height:auto; }
 </style>
 <script>if (!('PageRevealEvent' in window)) document.documentElement.className += ' no-xdoc-vt';</script>
 </head>
@@ -92,7 +101,7 @@
   <header style="max-width:1160px; margin:0 auto; padding:clamp(56px,8vw,104px) clamp(20px,5vw,48px) clamp(32px,4vw,44px);">
     <div style="max-width:820px;">
       <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:0.14em; text-transform:uppercase; color:#6D28D9; margin-bottom:26px;">About · who's behind Crucible</div>
-      <h1 style="font-family:'Fraunces',serif; font-weight:500; font-size:clamp(2.3rem,5.4vw,4.1rem); line-height:1.05; letter-spacing:-0.02em; margin:0 0 24px;">Run by <span style="font-style:italic; font-weight:600; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); -webkit-background-clip:text; background-clip:text; color:transparent;">Antoine Hagry</span>.</h1>
+      <h1 style="font-family:'Fraunces',serif; font-weight:500; font-size:clamp(2.3rem,5.4vw,4.1rem); line-height:1.05; letter-spacing:-0.02em; margin:0 0 24px;">Run by <span id="founder-name" tabindex="0" style="font-style:italic; font-weight:600; cursor:pointer; background:linear-gradient(120deg,#4C1D95 0%,#7C3AED 55%,#A855F7 100%); -webkit-background-clip:text; background-clip:text; color:transparent;">Antoine Hagry</span>.</h1>
       <p style="font-size:clamp(16px,1.5vw,18px); line-height:1.62; color:#4A535F; max-width:640px; margin:0;">Crucible is a one-person practice. Every validation is run by me, end to end — no junior desk, no outsourcing, no reselling your rules.</p>
     </div>
   </header>
@@ -134,6 +143,15 @@
     </div>
   </footer>
 
+</div>
+
+<div id="name-photo" aria-hidden="true">
+  <div class="np-frame">
+    <picture>
+      <source srcset="antoine.webp" type="image/webp">
+      <img src="antoine.jpg" alt="Antoine Hagry" width="240" height="240" loading="lazy">
+    </picture>
+  </div>
 </div>
 
 <script>
@@ -197,38 +215,9 @@
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     var fine = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var GAP = 8, R = 150, R2 = R * R;
+    var GAP = 34, R = 150, R2 = R * R;
     var vw = 0, vh = 0;
     var pointer = { x: -9999, y: -9999 }, target = { x: -9999, y: -9999 };
-
-    /* Line-drawing source -> darkness buffer (composited on white, smoothed) */
-    var portrait = null;
-    (function () {
-      var img = new Image();
-      img.onload = function () {
-        var BW = 170, BH = 170;
-        var oc = document.createElement('canvas'); oc.width = BW; oc.height = BH;
-        var octx = oc.getContext('2d');
-        octx.fillStyle = '#fff'; octx.fillRect(0, 0, BW, BH);
-        octx.imageSmoothingEnabled = true; if ('imageSmoothingQuality' in octx) octx.imageSmoothingQuality = 'high';
-        octx.drawImage(img, 0, 0, BW, BH);
-        var d;
-        try { d = octx.getImageData(0, 0, BW, BH).data; } catch (e) { return; }
-        var buf = new Float32Array(BW * BH);
-        for (var i = 0; i < BW * BH; i++) {
-          var lum = (d[i * 4] * 0.299 + d[i * 4 + 1] * 0.587 + d[i * 4 + 2] * 0.114) / 255;
-          buf[i] = 1 - lum;
-        }
-        portrait = { buf: buf, BW: BW, BH: BH };
-        if (reduce) { paint(); } else { wake(); }
-      };
-      img.src = 'antoine_tone.png';
-    })();
-    function sampleDark(u, v) {
-      if (!portrait || u < 0 || u >= 1 || v < 0 || v >= 1) return 0;
-      var ix = (u * portrait.BW) | 0, iy = (v * portrait.BH) | 0;
-      return portrait.buf[iy * portrait.BW + ix];
-    }
     function resize() {
       vw = window.innerWidth; vh = window.innerHeight;
       canvas.style.width = vw + 'px'; canvas.style.height = vh + 'px';
@@ -237,31 +226,22 @@
     }
     function paint() {
       ctx.clearRect(0, 0, vw, vh);
-      if (!portrait) return;
+      var maxY = Math.min(vh, pageEl.getBoundingClientRect().bottom);
       var sy = reduce ? 0 : (window.scrollY || window.pageYOffset || 0);
-      var BOX = Math.min(vw * 0.92, 720);
-      var boxLeft = (vw - BOX) / 2;
-      var boxTopScreen = 40 - sy;          // 40 = page-space top of the portrait
-      var n = Math.ceil(BOX / GAP), maxR = GAP * 0.74;
-      for (var j = 0; j <= n; j++) {
-        var y = boxTopScreen + j * GAP;
-        if (y < -GAP || y > vh + GAP) continue;
-        var v = j / n;
-        for (var i = 0; i <= n; i++) {
-          var x = boxLeft + i * GAP;
-          var dk = sampleDark(i / n, v);
-          if (dk > 0) dk = Math.pow(dk, 0.72);
-          var e = 0, px = x, py = y;
+      var phase = ((sy % GAP) + GAP) % GAP;
+      var cols = Math.ceil(vw / GAP) + 1;
+      var ox = (vw - (cols - 1) * GAP) / 2;
+      for (var y = -phase; y <= maxY; y += GAP) {
+        for (var i = 0; i < cols; i++) {
+          var x = ox + i * GAP, e = 0, px = x, py = y;
           if (fine) {
             var dx = pointer.x - x, dy = pointer.y - y, d2 = dx * dx + dy * dy;
             if (d2 < R2) { var dist = Math.sqrt(d2) || 0.0001; e = 1 - dist / R; e = e * e; px += (dx / dist) * (e * 6); py += (dy / dist) * (e * 6); }
           }
-          if (dk < 0.05 && e < 0.02) continue;
-          var rad = 0.6 + dk * maxR + e * 1.7;
+          var rad = 1.1 + e * 1.7;
           var cr = (20 + 89 * e) | 0, cg = (24 + 16 * e) | 0, cb = (31 + 186 * e) | 0;
-          var a = 0.1 + dk * 0.6 + e * 0.5; if (a > 0.72) a = 0.72;
           ctx.beginPath();
-          ctx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + a + ')';
+          ctx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + (0.09 + e * 0.8) + ')';
           ctx.arc(px, py, rad, 0, 6.2832);
           ctx.fill();
         }
@@ -294,6 +274,38 @@
     document.addEventListener('visibilitychange', function () { if (!document.hidden) wake(); });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(wake);
     wake();
+  })();
+</script>
+
+<script>
+  /* Reveal the founder photo while hovering the name (follows the cursor) */
+  (function () {
+    var name = document.getElementById('founder-name');
+    var ph = document.getElementById('name-photo');
+    if (!name || !ph) return;
+    var fine = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var PW = 240;
+    if (fine) {
+      var xTo, yTo;
+      if (window.gsap && gsap.quickTo && !reduce) {
+        xTo = gsap.quickTo(ph, 'x', { duration: 0.4, ease: 'power3' });
+        yTo = gsap.quickTo(ph, 'y', { duration: 0.4, ease: 'power3' });
+      }
+      function pos(e) {
+        var x = e.clientX + 26; if (x > window.innerWidth - PW - 16) x = e.clientX - PW - 26;
+        var y = Math.max(12, Math.min(e.clientY - 30, window.innerHeight - 270));
+        return { x: x, y: y };
+      }
+      function move(e) { var p = pos(e); if (xTo) { xTo(p.x); yTo(p.y); } else { ph.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)'; } }
+      name.addEventListener('mouseenter', function (e) { var p = pos(e); if (window.gsap) gsap.set(ph, { x: p.x, y: p.y }); else ph.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)'; ph.classList.add('show'); });
+      name.addEventListener('mousemove', move);
+      name.addEventListener('mouseleave', function () { ph.classList.remove('show'); });
+      name.addEventListener('focus', function () { ph.classList.add('centered', 'show'); });
+      name.addEventListener('blur', function () { ph.classList.remove('centered', 'show'); });
+    } else {
+      name.addEventListener('click', function () { ph.classList.toggle('centered'); ph.classList.toggle('show'); });
+    }
   })();
 </script>
 
