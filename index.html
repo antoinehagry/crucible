@@ -903,9 +903,10 @@
 </script>
 
 <script>
-  /* Interactive dot-grid across the light background. Faint quant grid; dots near the
-     cursor light up violet (pointer smoothed via gsap.quickTo). Anchored to page scroll,
-     clipped to the light content, paused when idle. Static texture under reduced-motion. */
+  /* Interactive dot-grid, v2. Grey grid across the whole light background, every dot
+     breathing/shimmering in a continuous loop; a large violet dot-cloud trails the
+     cursor (GSAP-smoothed, cloud-like lag), swirling and pulsing with it. Anchored to
+     page scroll, clipped to the light content. Static grid under reduced-motion. */
   (function () {
     var canvas = document.getElementById('bg-dots');
     var pageEl = document.getElementById('page');
@@ -915,7 +916,7 @@
     var fine = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
 
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var GAP = 34, R = 150, R2 = R * R;
+    var GAP = 34, R = 260, R2 = R * R;
     var vw = 0, vh = 0;
     var pointer = { x: -9999, y: -9999 }, target = { x: -9999, y: -9999 };
 
@@ -925,72 +926,85 @@
       canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
-    function paint() {
+    function hash(ix, iy) {
+      var h = Math.sin(ix * 127.1 + iy * 311.7) * 43758.5453;
+      return h - Math.floor(h);
+    }
+    function paint(t) {
       ctx.clearRect(0, 0, vw, vh);
       var maxY = Math.min(vh, pageEl.getBoundingClientRect().bottom);
       var sy = reduce ? 0 : (window.scrollY || window.pageYOffset || 0);
       var phase = ((sy % GAP) + GAP) % GAP;
       var cols = Math.ceil(vw / GAP) + 1;
       var ox = (vw - (cols - 1) * GAP) / 2;
-      for (var y = -phase; y <= maxY; y += GAP) {
-        for (var i = 0; i < cols; i++) {
-          var x = ox + i * GAP, e = 0, px = x, py = y;
-          if (fine) {
-            var dx = pointer.x - x, dy = pointer.y - y, d2 = dx * dx + dy * dy;
-            if (d2 < R2) {
-              var dist = Math.sqrt(d2) || 0.0001;
-              e = 1 - dist / R; e = e * e;
-              px += (dx / dist) * (e * 6); py += (dy / dist) * (e * 6);
-            }
+      var breath = 0.86 + 0.14 * Math.sin(t * 1.6);
+      function dot(x0, y0, hx, hy) {
+        var px = x0, py = y0, e = 0, h = hash(hx, hy);
+        if (fine) {
+          var dx = x0 - pointer.x, dy = y0 - pointer.y, d2 = dx * dx + dy * dy;
+          if (d2 < R2) {
+            var d = Math.sqrt(d2) || 0.0001;
+            var edge = 0.82 + 0.3 * Math.sin(t * (0.9 + h * 1.4) + h * 6.2832);
+            e = 1 - d / (R * breath * edge);
+            if (e > 0) {
+              e = e * e;
+              var ang = h * 6.2832 + t * (0.35 + h * 0.55);
+              px += Math.cos(ang) * e * 8;
+              py += Math.sin(ang) * e * 8;
+            } else e = 0;
           }
-          var rad = 1.1 + e * 1.7;
-          var cr = (20 + 89 * e) | 0, cg = (24 + 16 * e) | 0, cb = (31 + 186 * e) | 0;
-          ctx.beginPath();
-          ctx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + (0.09 + e * 0.8) + ')';
-          ctx.arc(px, py, rad, 0, 6.2832);
-          ctx.fill();
+        }
+        var rad;
+        if (e > 0) {
+          var pulse = 0.8 + 0.2 * Math.sin(t * (1.3 + h) + h * 12);
+          var vr = 109 + 59 * h, vg = 40 + 45 * h, vb = 217 + 30 * h;
+          var cr = (20 + (vr - 20) * e) | 0, cg = (24 + (vg - 24) * e) | 0, cb = (31 + (vb - 31) * e) | 0;
+          var a = Math.min(0.9, 0.1 + e * 0.85 * pulse);
+          ctx.fillStyle = 'rgba(' + cr + ',' + cg + ',' + cb + ',' + a + ')';
+          rad = 1.1 + e * (1.7 + 0.8 * pulse);
+        } else {
+          var g = 0.5 + 0.5 * Math.sin(t * (0.6 + h * 0.9) + h * 6.2832);
+          ctx.fillStyle = 'rgba(20,24,31,' + (0.06 + 0.08 * g).toFixed(3) + ')';
+          rad = 0.95 + 0.35 * g;
+        }
+        ctx.beginPath();
+        ctx.arc(px, py, rad, 0, 6.2832);
+        ctx.fill();
+      }
+      for (var y = -phase; y <= maxY; y += GAP) {
+        var iy = Math.round((y + sy) / GAP);
+        for (var i = 0; i < cols; i++) {
+          dot(ox + i * GAP, y, i, iy);
         }
       }
     }
 
     resize();
     var rt;
-    if (reduce) {
-      paint();
-      window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { resize(); paint(); }, 150); });
-      return;
-    }
+    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { resize(); if (reduce) paint(0); }, 150); });
+    if (reduce) { paint(0); return; }
 
     var xTo, yTo;
     if (fine && window.gsap && gsap.quickTo) {
-      xTo = gsap.quickTo(pointer, 'x', { duration: 0.45, ease: 'power3' });
-      yTo = gsap.quickTo(pointer, 'y', { duration: 0.45, ease: 'power3' });
+      xTo = gsap.quickTo(pointer, 'x', { duration: 0.6, ease: 'power2' });
+      yTo = gsap.quickTo(pointer, 'y', { duration: 0.6, ease: 'power2' });
     }
+    function park() { target.x = -9999; target.y = -9999; if (xTo) { xTo(-9999); yTo(-9999); } }
     if (fine) {
       window.addEventListener('pointermove', function (e) {
         target.x = e.clientX; target.y = e.clientY;
         if (xTo) { xTo(target.x); yTo(target.y); }
-        wake();
       }, { passive: true });
-      window.addEventListener('blur', function () { target.x = -9999; target.y = -9999; if (xTo) { xTo(-9999); yTo(-9999); } wake(); });
+      window.addEventListener('blur', park);
+      document.documentElement.addEventListener('mouseleave', park);
     }
 
-    var running = false, rafId = 0, lastActive = 0;
-    function now() { return (window.performance && performance.now) ? performance.now() : +new Date(); }
-    function loop() {
-      if (fine && !xTo) { pointer.x += (target.x - pointer.x) * 0.18; pointer.y += (target.y - pointer.y) * 0.18; }
-      paint();
-      var settled = !fine || (Math.abs(target.x - pointer.x) < 0.6 && Math.abs(target.y - pointer.y) < 0.6);
-      if (now() - lastActive > 500 && settled) { running = false; return; }
-      rafId = requestAnimationFrame(loop);
+    function loop(ts) {
+      if (fine && !xTo) { pointer.x += (target.x - pointer.x) * 0.1; pointer.y += (target.y - pointer.y) * 0.1; }
+      paint(ts / 1000);
+      requestAnimationFrame(loop);
     }
-    function wake() { lastActive = now(); if (!running) { running = true; rafId = requestAnimationFrame(loop); } }
-
-    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { resize(); wake(); }, 150); });
-    window.addEventListener('scroll', wake, { passive: true });
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) wake(); });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(wake);
-    wake();
+    requestAnimationFrame(loop);
   })();
 </script>
 
